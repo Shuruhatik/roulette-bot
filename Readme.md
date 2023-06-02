@@ -27,4 +27,4 @@ Roulette Bot By Shuruhatik#2443
 
 
 ## License
-Refer to the [LICENSE](https://github.com/Shuruhatik/roulette-bot/LICENSE) file.
+Refer to the [LICENSE](https://github.com/Shuruhatik/roulette-bot/blob/main/LICENSE) file.
