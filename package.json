@@ -1,0 +1,35 @@
+{
+  "type": "module",
+  "version": "1.0.0",
+  "license": "BSD-2-Clause",
+  "homepage": "https://bio.shuruhatik.com/",
+  "keywords": [
+    "roulette",
+    "shuruhatik",
+    "شروحاتك",
+    "gif",
+    "animated",
+    "roulette",
+    "roulette",
+    "discord",
+    "fizbo"
+  ],
+  "name": "roulette-bot",
+  "author": "shuruhatik",
+  "scripts": {
+    "Shuruhatik#2443": "node -r repl.uptime/start index.js"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.41",
+    "@skyra/gifenc": "^1.0.1",
+    "eris": "^0.17.2",
+    "eris-collects": "^1.0.0",
+    "inquirer": "^9.2.3",
+    "nanospinner": "^1.1.0",
+    "quick.replit": "^1.0.3",
+    "quickinterval": "^1.1.3",
+    "repl.uptime": "^0.0.7",
+    "roulette-image": "^0.1.7",
+    "st.db": "^6.0.1"
+  }
+}
