@@ -166,7 +166,7 @@ export default async function (bot, interaction, type = "slash", settings) {
           await mm_2.edit({ components: mm_2.components }).catch(() => { });
         }
       }).catch(() => { });
-      if (roulette_games.has(interaction.guildID) && !roulette_games.get(interaction.guildID).players[3]) {
+      if (roulette_games.has(interaction.guildID) && !roulette_games.get(interaction.guildID).players[2]) {
         interaction.channel.createMessage("🚫 | تم إلغاء اللعبة لعدم وجود 3 لاعبين على الأقل");
         roulette_games.delete(interaction.guildID)
       } else if (roulette_games.has(interaction.guildID)) {
