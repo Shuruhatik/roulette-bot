@@ -11,14 +11,18 @@ export default async function (debug = false, config, is_replit = (process.env.R
   const spinner = createSpinner('Run a project made by Shuruhatik', { interval: 50 }).start({ "color": "blue" })
 
   bot.connect().catch(spinner ? (e) => spinner.error({ text: `The bot did not work and the error is: ${e.message}` }) : console.error);
+  let ready_first;
   bot.on("ready", async () => {
     if (spinner) spinner.success({ text: `Logged in as \x1B[1m${bot.user.username}\u001b[0m (\x1B[4m${bot.user.id}\u001b[0m)` });
     bot.editStatus(`online`, [{ name: await settings.get("status_bot") || "Bot By Shuruhatik", type: await settings.get("status_type") || 0 }]);
-    console.log(`\n\u001b[32;1m` + shuruhatik + `\u001b[0m\u001b[0m\n\n\u001b[1mﻲﺒﻨﻟﺍ ﻰﻠﻋ ةﻼﺻﻭ رﺎﻔﻐﺘﺳﻻﺍ ﺮﺜﻛﻭ ،ﻪﻠﻟﺍ ﺮﻛﺫ َﺲﻨﺗ ﻻ\u001b[0m`);
-    console.log(`\n\u001b[32;1m◤\u001b[0m\u001b[0m\u001b[1m https://api.shuruhatik.com/add/${bot.user.id} \u001b[32;1m◢\u001b[0m`);
+    if (!ready_first) {
+      console.log(`\n\u001b[32;1m` + shuruhatik + `\u001b[0m\u001b[0m\n\n\u001b[1mﻲﺒﻨﻟﺍ ﻰﻠﻋ ةﻼﺻﻭ رﺎﻔﻐﺘﺳﻻﺍ ﺮﺜﻛﻭ ،ﻪﻠﻟﺍ ﺮﻛﺫ َﺲﻨﺗ ﻻ\u001b[0m`);
+      console.log(`\n\u001b[32;1m◤\u001b[0m\u001b[0m\u001b[1m https://api.shuruhatik.com/add/${bot.user.id} \u001b[32;1m◢\u001b[0m`);
+      ready_first = true;
+    }
     let command_names = await settings.has("command_names") ? await settings.get("command_names") : ["roulette", "روليت"]
     bot.requestHandler.request("PUT", `/applications/${bot.application.id}/commands`, true, command_names.map((name) => ({
-      name:name.toLowerCase(), type: 1, description: "بدا فعالية لعبة عجلة الحظ", dm_permission: false
+      name: name.toLowerCase(), type: 1, description: "بدا فعالية لعبة عجلة الحظ", dm_permission: false
     })))
   });
   process.on('uncaughtException', (err, origin) => console.log(err));

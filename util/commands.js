@@ -25,7 +25,7 @@ export default async function (bot, interaction, type = "slash", settings) {
       }))),
       embeds: [{
         title: "روليت",
-        color: 0x0ff000,
+        color: 0xe4f000,
         description: `__**اللاعبين:**__\nلا يوجد لاعبين مشاركين باللعبة`,
         fields: [{
           name: "__طريقة اللاعب:__",
@@ -70,9 +70,9 @@ export default async function (bot, interaction, type = "slash", settings) {
       if (data[0] == "leave") {
         await i.deferUpdate();
         let roulette_data = roulette_games.get(i.guildID)
-        if (!roulette_data.players[0]) return await i.createMessage({ flags: 64, content: `<:xo:903976795244740681> | انت غير مشارك بالفعل` });
+        if (!roulette_data.players[0]) return await i.createMessage({ flags: 64, content: `:x: | انت غير مشارك بالفعل` });
         let player = roulette_data.players.find(player => player.id == i.member.id)
-        if (roulette_data.players[0] && !player) return await i.createMessage({ flags: 64, content: `<:xo:903976795244740681> | انت غير مشارك بالفعل` });
+        if (roulette_data.players[0] && !player) return await i.createMessage({ flags: 64, content: `:x: | انت غير مشارك بالفعل` });
 
         roulette_data.players = roulette_data.players.filter(x => x.id != i.member.id);
         roulette_games.set(i.guildID, roulette_data)
@@ -87,27 +87,17 @@ export default async function (bot, interaction, type = "slash", settings) {
       } else if (data[0] == "join") {
         let roulette_data = roulette_games.get(i.guildID)
         if (roulette_data.players.length >= 40) return await i.createMessage({ flags: 64, content: "عدد المشاركين مكتمل" })
-        if (roulette_data.players[0] && roulette_data.players.some(player => player.id == i.member.id)) return await i.createMessage({ flags: 64, content: `لقد سجلت بالفعل.` });
-        await i.deferUpdate();
-        if (data[1] == "random") {
-          let number = await getRandomNumber(40, roulette_data.players.map(e => e.number));
-          roulette_data.players.push({
-            username: i.member.username,
-            id: i.member.id,
-            avatarURL: i.member.staticAvatarURL.replace("size=128", "size=512") || i.member.defaultAvatarURL,
-            number,
-            color: getRandomDarkHexCode()
-          })
-          roulette_games.set(i.guildID, roulette_data)
-          data[1] = number;
+        if (roulette_data.players[0] && roulette_data.players.some(player => player.id == i.member.id)) {
+          await i.deferUpdate();
+          let player = roulette_data.players.find(player => player.id == i.member.id)
+          roulette_data.players = roulette_data.players.filter(x => x.id != i.member.id);
+          data[0] = "join_" + player.number
+          await disabledMultipleButtons(i.message, `${[data[0], ...data.slice(2)].join("_")}`, `${i.member.username}`, true);
           m.embeds[0].description = `__**اللاعبين:**__\n${roulette_data.players[0] ? `${roulette_data.players.sort((a, b) => a.number - b.number, 0).map(player => `\`${`${player.number + 1}`.length == 1 ? "0" : ""}${player.number + 1}\`: <@!${player.id}>`).join("\n")}` : "لا يوجد لاعبين مشاركين باللعبة"}`
-          await i.message.edit({ components: i.message.components }).catch(() => { });
-          await disabledMultipleButtons(m, `${data.join("_")}`, `${number + 1}. ${i.member.username}`);
-          await disabledMultipleButtons(mm_2, `${data.join("_")}`, `${number + 1}. ${i.member.username}`);
-
+          await disabledMultipleButtons(m, `${[data[0], ...data.slice(2)].join("_")}`, `${i.member.username}`, true);
+          await disabledMultipleButtons(mm_2, `${[data[0], ...data.slice(2)].join("_")}`, `${i.member.username}`, true);
           await m.edit({ embeds: m.embeds, components: m.components }).catch(() => { });
           await mm_2.edit({ components: mm_2.components }).catch(() => { });
-        } else {
           let number = +data[1];
           roulette_data.players.push({
             username: i.member.username,
@@ -124,6 +114,44 @@ export default async function (bot, interaction, type = "slash", settings) {
 
           await m.edit({ embeds: m.embeds, components: m.components }).catch(() => { });
           await mm_2.edit({ components: mm_2.components }).catch(() => { });
+        } else {
+          await i.deferUpdate();
+          if (data[1] == "random") {
+            let number = await getRandomNumber(40, roulette_data.players.map(e => e.number));
+            roulette_data.players.push({
+              username: i.member.username,
+              id: i.member.id,
+              avatarURL: i.member.staticAvatarURL.replace("size=128", "size=512") || i.member.defaultAvatarURL,
+              number,
+              color: getRandomDarkHexCode()
+            })
+            roulette_games.set(i.guildID, roulette_data)
+            data[1] = number;
+            m.embeds[0].description = `__**اللاعبين:**__\n${roulette_data.players[0] ? `${roulette_data.players.sort((a, b) => a.number - b.number, 0).map(player => `\`${`${player.number + 1}`.length == 1 ? "0" : ""}${player.number + 1}\`: <@!${player.id}>`).join("\n")}` : "لا يوجد لاعبين مشاركين باللعبة"}`
+            await i.message.edit({ components: i.message.components }).catch(() => { });
+            await disabledMultipleButtons(m, `${data.join("_")}`, `${number + 1}. ${i.member.username}`);
+            await disabledMultipleButtons(mm_2, `${data.join("_")}`, `${number + 1}. ${i.member.username}`);
+
+            await m.edit({ embeds: m.embeds, components: m.components }).catch(() => { });
+            await mm_2.edit({ components: mm_2.components }).catch(() => { });
+          } else {
+            let number = +data[1];
+            roulette_data.players.push({
+              username: i.member.username,
+              id: i.member.id,
+              avatarURL: i.member.staticAvatarURL.replace("size=128", "size=512") || i.member.defaultAvatarURL,
+              number,
+              color: getRandomDarkHexCode()
+            })
+            roulette_games.set(i.guildID, roulette_data)
+            m.embeds[0].description = `__**اللاعبين:**__\n${roulette_data.players[0] ? `${roulette_data.players.sort((a, b) => a.number - b.number, 0).map(player => `\`${`${player.number + 1}`.length == 1 ? "0" : ""}${player.number + 1}\`: <@!${player.id}>`).join("\n")}` : "لا يوجد لاعبين مشاركين باللعبة"}`
+            await i.message.edit({ components: i.message.components }).catch(() => { });
+            await disabledMultipleButtons(m, i.data.custom_id, `${number + 1}. ${i.member.username}`);
+            await disabledMultipleButtons(mm_2, i.data.custom_id, `${number + 1}. ${i.member.username}`);
+
+            await m.edit({ embeds: m.embeds, components: m.components }).catch(() => { });
+            await mm_2.edit({ components: mm_2.components }).catch(() => { });
+          }
         }
       }
     });
@@ -131,13 +159,14 @@ export default async function (bot, interaction, type = "slash", settings) {
       interaction.channel.getMessage(m.id).then(async mm => {
         if (mm.components[0] && mm.components[0].components[0]) {
           await disabledMultipleButtons(mm)
+          mm.embeds[0].color = 0x0ff000
           mm.embeds[0].fields = [mm.embeds[0].fields[0]]
           await mm.edit({ embeds: mm.embeds, components: mm.components }).catch(() => { });
           await disabledMultipleButtons(mm_2)
           await mm_2.edit({ components: mm_2.components }).catch(() => { });
         }
       }).catch(() => { });
-      if (roulette_games.has(interaction.guildID) && !roulette_games.get(interaction.guildID).players[2]) {
+      if (roulette_games.has(interaction.guildID) && !roulette_games.get(interaction.guildID).players[3]) {
         interaction.channel.createMessage("🚫 | تم إلغاء اللعبة لعدم وجود 3 لاعبين على الأقل");
         roulette_games.delete(interaction.guildID)
       } else if (roulette_games.has(interaction.guildID)) {
