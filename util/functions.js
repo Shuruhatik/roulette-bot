@@ -39,6 +39,7 @@ function getMultipleButtons(all_buttons) {
 }
 
 async function startRoundRoulette(bot, interaction, roulette_games, id, round = 1) {
+  if (!roulette_games.has(interaction.guildID)) return await interaction.channel.createMessage(":x: | تم إيقاف الجولة بواسطة المسؤولين");
   let roulette_data = roulette_games.get(interaction.guildID)
   let players = shuffleArray(roulette_data.players.sort((a, b) => a.number - b.number, 0));
   let winner = players[players.length - 1];
@@ -71,45 +72,56 @@ async function startRoundRoulette(bot, interaction, roulette_games, id, round = 
     collecter_buttons.on('collect', async i => {
       if (winner.id !== i.member.id) return await i.createMessage({ flags: 64, content: `:x: | فقط الشخص الذي لديه الدور يمكنه الاختيار` })
       await i.deferUpdate();
+      if (!roulette_games.has(interaction.guildID)) return collecter_buttons.stop("stop");
       collecter_buttons.stop(i.data.custom_id);
     })
     collecter_buttons.on("end", async (interactions, r) => {
-      let data = r.split("_")
-      if (r.startsWith("kick")) {
-        let number = +data[1];
-        let player = roulette_data.players.find(player => player.number == number);
+      if (!roulette_games.has(interaction.guildID)) {
+        await interaction.channel.createMessage(":x: | تم إيقاف الجولة بواسطة المسؤولين");
         interaction.channel.getMessage(game_msg.id).then(async mm => {
           if (mm.components[0] && !mm.components[0].components[0].disabled) {
             await disabledMultipleButtons(mm)
             await mm.edit({ components: mm.components }).catch(() => { });
-            interaction.channel.createMessage(`💣 | تم طرد <@${player.id}> من اللعبة ، سيتم بدء الجولة القادمة في بضع ثواني...`);
-            roulette_data.players = roulette_data.players.filter(x => x.number != number);
-            roulette_games.set(interaction.guildID, roulette_data);
-            await startRoundRoulette(bot, interaction, roulette_games, id, round + 1);
-          }
-        })
-      } else if (r.startsWith("withdraw")) {
-        interaction.channel.getMessage(game_msg.id).then(async mm => {
-          if (mm.components[0] && !mm.components[0].components[0].disabled) {
-            await disabledMultipleButtons(mm)
-            await mm.edit({ components: mm.components }).catch(() => { });
-            interaction.channel.createMessage(`💣 | لقد انسحب <@${winner.id}> من اللعبة ، سيتم بدء الجولة القادمة في بضع ثواني...`);
-            roulette_data.players = roulette_data.players.filter(x => x.id != winner.id);
-            roulette_games.set(interaction.guildID, roulette_data);
-            await startRoundRoulette(bot, interaction, roulette_games, id, round + 1);
-          }
-        })
-      } else if (r == "time") {
-        interaction.channel.getMessage(game_msg.id).then(async mm => {
-          if (mm.components[0] && !mm.components[0].components[0].disabled) {
-            await disabledMultipleButtons(mm)
-            await mm.edit({ components: mm.components }).catch(() => { });
-            interaction.channel.createMessage(`💣 | تم طرد <@${winner.id}> من اللعبة لعدم تفاعله ، سيتم بدء الجولة القادمة في بضع ثواني...`);
-            roulette_data.players = roulette_data.players.filter(x => x.id != winner.id);
-            roulette_games.set(interaction.guildID, roulette_data);
-            await startRoundRoulette(bot, interaction, roulette_games, id, round + 1);
           }
         }).catch(console.error);
+      } else {
+        let data = r.split("_")
+        if (r.startsWith("kick")) {
+          let number = +data[1];
+          let player = roulette_data.players.find(player => player.number == number);
+          interaction.channel.getMessage(game_msg.id).then(async mm => {
+            if (mm.components[0] && !mm.components[0].components[0].disabled) {
+              await disabledMultipleButtons(mm)
+              await mm.edit({ components: mm.components }).catch(() => { });
+              interaction.channel.createMessage(`💣 | تم طرد <@${player.id}> من اللعبة ، سيتم بدء الجولة القادمة في بضع ثواني...`);
+              roulette_data.players = roulette_data.players.filter(x => x.number != number);
+              roulette_games.set(interaction.guildID, roulette_data);
+              await startRoundRoulette(bot, interaction, roulette_games, id, round + 1);
+            }
+          })
+        } else if (r.startsWith("withdraw")) {
+          interaction.channel.getMessage(game_msg.id).then(async mm => {
+            if (mm.components[0] && !mm.components[0].components[0].disabled) {
+              await disabledMultipleButtons(mm)
+              await mm.edit({ components: mm.components }).catch(() => { });
+              interaction.channel.createMessage(`💣 | لقد انسحب <@${winner.id}> من اللعبة ، سيتم بدء الجولة القادمة في بضع ثواني...`);
+              roulette_data.players = roulette_data.players.filter(x => x.id != winner.id);
+              roulette_games.set(interaction.guildID, roulette_data);
+              await startRoundRoulette(bot, interaction, roulette_games, id, round + 1);
+            }
+          })
+        } else if (r == "time") {
+          interaction.channel.getMessage(game_msg.id).then(async mm => {
+            if (mm.components[0] && !mm.components[0].components[0].disabled) {
+              await disabledMultipleButtons(mm)
+              await mm.edit({ components: mm.components }).catch(() => { });
+              interaction.channel.createMessage(`💣 | تم طرد <@${winner.id}> من اللعبة لعدم تفاعله ، سيتم بدء الجولة القادمة في بضع ثواني...`);
+              roulette_data.players = roulette_data.players.filter(x => x.id != winner.id);
+              roulette_games.set(interaction.guildID, roulette_data);
+              await startRoundRoulette(bot, interaction, roulette_games, id, round + 1);
+            }
+          }).catch(console.error);
+        }
       }
     })
   }
@@ -172,7 +184,8 @@ async function runAction(auto_run) {
     await settings.set("status_type", status_type);
     await settings.set("waiting_time", waiting_time);
     await settings.set("prefix", "-");
-    await settings.set("command_names", ["roulette", "روليت"]);
+    await settings.set("roulette_command_names", ["roulette", "روليت"]);
+    await settings.set("stop_command_names", ["stop", "توقف"]);
     await settings.set("reset", "احذف هذا السطر إذا كنت تريد تحط توكن جديد");
     return await runAction();
   };

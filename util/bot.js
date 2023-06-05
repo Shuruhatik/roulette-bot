@@ -20,10 +20,14 @@ export default async function (debug = false, config, is_replit = (process.env.R
       console.log(`\n\u001b[32;1m◤\u001b[0m\u001b[0m\u001b[1m https://api.shuruhatik.com/add/${bot.user.id} \u001b[32;1m◢\u001b[0m`);
       ready_first = true;
     }
-    let command_names = await settings.has("command_names") ? await settings.get("command_names") : ["roulette", "روليت"]
-    bot.requestHandler.request("PUT", `/applications/${bot.application.id}/commands`, true, command_names.map((name) => ({
-      name: name.toLowerCase(), type: 1, description: "بدا فعالية لعبة عجلة الحظ", dm_permission: false
-    })))
+    let roulette_command_names = await settings.has("roulette_command_names") ? await settings.get("roulette_command_names") : ["roulette", "روليت"]
+    let stop_command_names = await settings.has("stop_command_names") ? await settings.get("stop_command_names") : ["stop", "توقف"]
+    bot.requestHandler.request("PUT", `/applications/${bot.application.id}/commands`, true, [
+      ...roulette_command_names.map((name) => ({
+      name: name.toLowerCase(), type: 1, description: "بدا فعالية لعبة روليت", dm_permission: false
+    })), ...stop_command_names.map((name) => ({
+      name: name.toLowerCase(), type: 1, description: "إيقاف فعالية لعبة روليت", dm_permission: false
+    }))])
   });
   process.on('uncaughtException', (err, origin) => console.log(err));
   bot.on("error", console.log);
